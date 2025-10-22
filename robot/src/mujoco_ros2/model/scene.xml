@@ -14,10 +14,29 @@
     <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
       markrgb="0.8 0.8 0.8" width="300" height="300"/>
     <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+
+    <!-- Conveyor texture & material -->
+    <texture file="textures/conveyor.png" type="2d" name="conveyorbelt"/>
+    <material name="conveyor" reflectance="0.1" texrepeat="5 5" texture="conveyorbelt" texuniform="true"/>
   </asset>
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+
+    <!-- Conveyor System -->
+    <body name="conveyor_floor" pos="0.4 0.3 0.05">
+      <!-- Conveyor visible surface -->
+      <geom name="conveyor_geom" size="0.2 1 0.01" type="plane" density="2000" condim="3" 
+            friction="1 1 1" material="conveyor"/>
+    </body>
+
+    <!-- Test box on conveyor -->
+    <body name="box" pos="0.4 0.1 0.08">
+      <geom type="box" size="0.1 0.1 0.02" mass="0.1" rgba="0.2 0.8 0.2 1"/>
+    </body>
   </worldbody>
+
+
 </mujoco>
+
