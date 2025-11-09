@@ -110,6 +110,13 @@ MuJoCoROS::MuJoCoROS(const std::string &xmlLocation) : Node("mujoco_node") {
   glfwMakeContextCurrent(_window);
   glfwSwapInterval(1); // NOTE TO SELF: CHECK THIS ARGUMENT
 
+  glfwSetWindowUserPointer(_window,
+                           this); // so we can refer to the instance "MuJoCoROS"
+                                  // later and access its members
+  glfwSetKeyCallback(_window,
+                     delete_trajectory); // handle any key presses; right now
+                                         // just delete trajectory path
+
   // Initialize MuJoCo rendering context
   mjv_defaultCamera(&_camera);
   mjv_defaultOption(&_renderingOptions);
@@ -260,15 +267,16 @@ void MuJoCoROS::draw_trajectory_path() {
   for (size_t i = 0; i < trajectory.size(); i++) {
     mjtNum currentPos[3] = {trajectory[i][0], trajectory[i][1],
                             trajectory[i][2]};
-    mjvGeom *sphere = &_scene.geoms[_scene.ngeom++];
+    mjvGeom *sphereGeom = &_scene.geoms[_scene.ngeom++];
     // below isn't really needed bas kol el references 7atoha fa just incase
-    sphere->objtype = mjOBJ_UNKNOWN;
-    sphere->objid = -1;
-    sphere->segid = _scene.ngeom;
-    sphere->category = mjCAT_DECOR;
+    sphereGeom->objtype = mjOBJ_UNKNOWN;
+    sphereGeom->objid = -1;
+    sphereGeom->segid = _scene.ngeom;
+    sphereGeom->category = mjCAT_DECOR;
 
-    // adds the sphere to the scene :)
-    mjv_initGeom(sphere, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3, rgba);
+    // adds the sphereGeom to the scene :)
+    mjv_initGeom(sphereGeom, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3,
+                 rgba);
     // adds the line to the scene :)
     if (i > 0) {
       mjvGeom *lineGeom = &_scene.geoms[_scene.ngeom++];
@@ -282,38 +290,20 @@ void MuJoCoROS::draw_trajectory_path() {
       mjv_connector(lineGeom, mjGEOM_LINE, 2, currentPos, previousPos);
     }
   }
+}
 
-  // mjtNum p1[3] = {0.5, 0.0, 0.5}; // start
-  // mjtNum p2[3] = {0.8, 0.0, 0.5};
-  // mjvGeom *mylinegeom;
-  // mjtNum linesize[3] = {0., 0., 0.};
-  // mjtNum com_proj[3];
-  // mjtNum diff[3];
-  // mjtNum myquat[4] = {1, 0, 0, 0};
-  // mjtNum myrot3x3_2[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
-  //
-  // mju_sub3(diff, p2, p1);
-  // // line length
-  // linesize[2] = mju_norm3(diff);
-  //
-  // // set mat to minimal rotation aligning b-a with z axis
-  // mju_quatZ2Vec(myquat, diff);
-  // mju_quat2Mat(myrot3x3_2, myquat);
-  //
-  // // one more geom to render
-  // _scene.ngeom = _scene.ngeom + 1;
-  // // mygeom now points to the last location in geoms buffer
-  // mylinegeom = _scene.geoms + _scene.ngeom - 1;
-  // // decor geom
-  // mylinegeom->objtype = mjOBJ_UNKNOWN;
-  // mylinegeom->objid = -1;
-  // mylinegeom->category = mjCAT_DECOR;
-  // mylinegeom->segid = _scene.ngeom;
-  // // Add it to the scene
-  // mjv_initGeom(mylinegeom, mjGEOM_LINE, linesize, p1, myrot3x3_2, rgba);
-  //
-  // mjv_addGeoms(_model, _jointState, &_renderingOptions, NULL, mjCAT_DECOR,
-  //              &_scene);
+void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
+                                  int action, int mods) {
+  if (action != GLFW_PRESS)
+    return;
+
+  MuJoCoROS *instance =
+      static_cast<MuJoCoROS *>(glfwGetWindowUserPointer(window));
+
+  if (key == GLFW_KEY_D) {
+    std::cout << "Trajectory path deleted!" << std::endl;
+    instance->trajectory.clear();
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                    Update the 3D simulation //

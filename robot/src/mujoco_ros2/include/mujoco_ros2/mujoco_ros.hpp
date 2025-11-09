@@ -102,6 +102,13 @@ private:
   void draw_trajectory_path();
 
   /**
+   * @brief given that the "d" button is pressed, it deletes what has been drawn
+   * as the trajectory
+   */
+  static void delete_trajectory(GLFWwindow *window, int key, int scancode,
+                                int action, int mods);
+
+  /**
    * @brief Updates the robot state, publishes joint state information.
    */
   void update_simulation();
