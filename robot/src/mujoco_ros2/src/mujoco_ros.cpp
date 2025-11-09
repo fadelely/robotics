@@ -18,6 +18,7 @@
  */
 
 #include "mjmodel.h"
+#include "mjtnum.h"
 #include "mujoco.h"
 #include <mujoco_ros2/mujoco_ros.hpp>
 
@@ -259,15 +260,27 @@ void MuJoCoROS::draw_trajectory_path() {
   for (size_t i = 0; i < trajectory.size(); i++) {
     mjtNum currentPos[3] = {trajectory[i][0], trajectory[i][1],
                             trajectory[i][2]};
-    mjvGeom *mygeom = &_scene.geoms[_scene.ngeom++];
+    mjvGeom *sphere = &_scene.geoms[_scene.ngeom++];
     // below isn't really needed bas kol el references 7atoha fa just incase
-    mygeom->objtype = mjOBJ_UNKNOWN;
-    mygeom->objid = -1;
-    mygeom->segid = _scene.ngeom;
-    mygeom->category = mjCAT_DECOR;
+    sphere->objtype = mjOBJ_UNKNOWN;
+    sphere->objid = -1;
+    sphere->segid = _scene.ngeom;
+    sphere->category = mjCAT_DECOR;
 
     // adds the sphere to the scene :)
-    mjv_initGeom(mygeom, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3, rgba);
+    mjv_initGeom(sphere, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3, rgba);
+    // adds the line to the scene :)
+    if (i > 0) {
+      mjvGeom *lineGeom = &_scene.geoms[_scene.ngeom++];
+      lineGeom->objtype = mjOBJ_UNKNOWN;
+      lineGeom->objid = -1;
+      lineGeom->segid = _scene.ngeom;
+      lineGeom->category = mjCAT_DECOR;
+      mjv_initGeom(lineGeom, mjGEOM_LINE, sphsize, currentPos, myrot3x3, rgba);
+      mjtNum previousPos[3] = {trajectory[i - 1][0], trajectory[i - 1][1],
+                               trajectory[i - 1][2]};
+      mjv_connector(lineGeom, mjGEOM_LINE, 2, currentPos, previousPos);
+    }
   }
 
   // mjtNum p1[3] = {0.5, 0.0, 0.5}; // start
