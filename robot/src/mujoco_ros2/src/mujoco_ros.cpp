@@ -17,6 +17,8 @@
  * @see https://docs.ros.org/en/humble/index.html for ROS 2 documentation
  */
 
+#include "mjmodel.h"
+#include "mujoco.h"
 #include <mujoco_ros2/mujoco_ros.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,6 +220,88 @@ void MuJoCoROS::joint_command_callback(
   }
 }
 
+void MuJoCoROS::draw_trajectory_path() {
+  float rgba[4] = {1.0f, 0.0f, 0.0f, 1.0f}; // red
+  mjtNum sphsize[3] = {0.01, 0.01, 0.01};
+  mjtNum myrot3x3[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+
+  // get the position of the end effector
+  int endEffector_id = mj_name2id(_model, mjOBJ_BODY, "wrist_3_link");
+  if (endEffector_id == -1)
+    throw std::runtime_error("End-effector body not found in model");
+  mjtNum endEffectorPos[3];
+  mju_copy3(endEffectorPos, _jointState->xpos + 3 * endEffector_id);
+
+  // lambda function that checks if two points are approximately equal based on
+  // eps
+  auto almost_equal = [](const std::array<mjtNum, 3> &a,
+                         const std::array<mjtNum, 3> &b, mjtNum eps = 1e-2) {
+    for (int i = 0; i < 3; ++i)
+      if (mju_abs(a[i] - b[i]) > eps)
+        return false;
+    return true;
+  };
+
+  // adds the point only if its not the same as the last one
+  // it also removes the earlier points of more than 200 points were drawn (so a
+  // buffer overflow doesn't occur in the scene.geom buffer)
+  std::array<mjtNum, 3> endEffectorPosArray = {
+      endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]};
+  if (trajectory.empty() ||
+      !almost_equal(trajectory.back(), endEffectorPosArray)) {
+    if (trajectory.size() > trajectoryLength) {
+      trajectory.erase(trajectory.begin());
+    }
+    trajectory.push_back(std::array<mjtNum, 3>{
+        endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]});
+  }
+
+  for (size_t i = 0; i < trajectory.size(); i++) {
+    mjtNum currentPos[3] = {trajectory[i][0], trajectory[i][1],
+                            trajectory[i][2]};
+    mjvGeom *mygeom = &_scene.geoms[_scene.ngeom++];
+    // below isn't really needed bas kol el references 7atoha fa just incase
+    mygeom->objtype = mjOBJ_UNKNOWN;
+    mygeom->objid = -1;
+    mygeom->segid = _scene.ngeom;
+    mygeom->category = mjCAT_DECOR;
+
+    // adds the sphere to the scene :)
+    mjv_initGeom(mygeom, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3, rgba);
+  }
+
+  // mjtNum p1[3] = {0.5, 0.0, 0.5}; // start
+  // mjtNum p2[3] = {0.8, 0.0, 0.5};
+  // mjvGeom *mylinegeom;
+  // mjtNum linesize[3] = {0., 0., 0.};
+  // mjtNum com_proj[3];
+  // mjtNum diff[3];
+  // mjtNum myquat[4] = {1, 0, 0, 0};
+  // mjtNum myrot3x3_2[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+  //
+  // mju_sub3(diff, p2, p1);
+  // // line length
+  // linesize[2] = mju_norm3(diff);
+  //
+  // // set mat to minimal rotation aligning b-a with z axis
+  // mju_quatZ2Vec(myquat, diff);
+  // mju_quat2Mat(myrot3x3_2, myquat);
+  //
+  // // one more geom to render
+  // _scene.ngeom = _scene.ngeom + 1;
+  // // mygeom now points to the last location in geoms buffer
+  // mylinegeom = _scene.geoms + _scene.ngeom - 1;
+  // // decor geom
+  // mylinegeom->objtype = mjOBJ_UNKNOWN;
+  // mylinegeom->objid = -1;
+  // mylinegeom->category = mjCAT_DECOR;
+  // mylinegeom->segid = _scene.ngeom;
+  // // Add it to the scene
+  // mjv_initGeom(mylinegeom, mjGEOM_LINE, linesize, p1, myrot3x3_2, rgba);
+  //
+  // mjv_addGeoms(_model, _jointState, &_renderingOptions, NULL, mjCAT_DECOR,
+  //              &_scene);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                    Update the 3D simulation //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -226,6 +310,7 @@ void MuJoCoROS::update_visualization() {
 
   mjv_updateScene(_model, _jointState, &_renderingOptions, NULL, &_camera,
                   mjCAT_ALL, &_scene); // Update 3D rendering
+  draw_trajectory_path();
 
   // Get framebuffer size
   int width, height;
