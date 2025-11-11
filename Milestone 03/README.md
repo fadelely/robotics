@@ -13,4 +13,8 @@ Before running any of the files, install the dependencies first:
 ```jacobian_matrix.py``` computes the symbolic form of the jacobian matrix and prints each element in the terminal.
 
 ```jacobian_dot_matrix.py``` computes the differentiated jacobian matrix and prints each element in the terminal.
+
+```forward_position_publisher.py``` same as last milestone, but edited to work with the conveyor
+
+```inverse_position_publisher.py``` same as last milestone, but edited to work with the conveyor
 ## Videos
