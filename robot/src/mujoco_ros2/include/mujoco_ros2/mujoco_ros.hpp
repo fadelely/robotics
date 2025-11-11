@@ -96,6 +96,8 @@ private:
   static constexpr int trajectoryLength =
       200; // 200 points at most are drawn at a time
   std::vector<std::array<mjtNum, 3>> trajectory; // positions of each point
+  bool hideTrajectory = false;
+  bool drawTrajectory = true;
   /**
    * @brief Follows the end effector of the robot arm and draws a line :)
    */

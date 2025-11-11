@@ -260,10 +260,15 @@ void MuJoCoROS::draw_trajectory_path() {
     if (trajectory.size() > trajectoryLength) {
       trajectory.erase(trajectory.begin());
     }
-    trajectory.push_back(std::array<mjtNum, 3>{
-        endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]});
+
+    if (drawTrajectory)
+      trajectory.push_back(std::array<mjtNum, 3>{
+          endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]});
   }
 
+  // still track any position changes that occur, but do not draw them
+  if (hideTrajectory)
+    return;
   for (size_t i = 0; i < trajectory.size(); i++) {
     mjtNum currentPos[3] = {trajectory[i][0], trajectory[i][1],
                             trajectory[i][2]};
@@ -279,19 +284,27 @@ void MuJoCoROS::draw_trajectory_path() {
                  rgba);
     // adds the line to the scene :)
     if (i > 0) {
-      mjvGeom *lineGeom = &_scene.geoms[_scene.ngeom++];
-      lineGeom->objtype = mjOBJ_UNKNOWN;
-      lineGeom->objid = -1;
-      lineGeom->segid = _scene.ngeom;
-      lineGeom->category = mjCAT_DECOR;
-      mjv_initGeom(lineGeom, mjGEOM_LINE, sphsize, currentPos, myrot3x3, rgba);
       mjtNum previousPos[3] = {trajectory[i - 1][0], trajectory[i - 1][1],
                                trajectory[i - 1][2]};
-      mjv_connector(lineGeom, mjGEOM_LINE, 2, currentPos, previousPos);
+      mjtNum dx = currentPos[0] - previousPos[0];
+      mjtNum dy = currentPos[1] - previousPos[1];
+      mjtNum dz = currentPos[2] - previousPos[2];
+      mjtNum distance = sqrt(dx * dx + dy * dy + dz * dz);
+      if (distance <= 1.0) {
+        mjvGeom *lineGeom = &_scene.geoms[_scene.ngeom++];
+        lineGeom->objtype = mjOBJ_UNKNOWN;
+        lineGeom->objid = -1;
+        lineGeom->segid = _scene.ngeom;
+        lineGeom->category = mjCAT_DECOR;
+        mjv_initGeom(lineGeom, mjGEOM_LINE, sphsize, currentPos, myrot3x3,
+                     rgba);
+        mjv_connector(lineGeom, mjGEOM_LINE, 2, currentPos, previousPos);
+      }
     }
   }
 }
 
+// does also other keybinds; mekasel a8yar el esm
 void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
                                   int action, int mods) {
   if (action != GLFW_PRESS)
@@ -303,6 +316,30 @@ void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
   if (key == GLFW_KEY_D) {
     std::cout << "Trajectory path deleted!" << std::endl;
     instance->trajectory.clear();
+  }
+  // hideTrajectory controls whether the trajectory is drawn on screen or not
+  // the end effector is still tracked so if the trajectoy is unhidden, the
+  // entire path is still shown
+  if (key == GLFW_KEY_H) {
+    if (instance->hideTrajectory) {
+      instance->hideTrajectory = false;
+      std::cout << "Trajectory path visible!" << std::endl;
+    } else {
+      instance->hideTrajectory = true;
+      std::cout << "Trajectory path hidden!" << std::endl;
+    }
+  }
+  // drawTrajectory allows new points to be drawn while the endeffector is
+  // moving, if it is false, no new points will be drawn, however the past
+  // points will still be shown
+  if (key == GLFW_KEY_T) {
+    if (instance->drawTrajectory) {
+      instance->drawTrajectory = false;
+      std::cout << "Stopped drawing trajectory path!" << std::endl;
+    } else {
+      instance->drawTrajectory = true;
+      std::cout << "Drawing trajectory path!" << std::endl;
+    }
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
