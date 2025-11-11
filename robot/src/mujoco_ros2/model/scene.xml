@@ -48,18 +48,23 @@
     <!-- Floor plane -->
     <geom name="floor" type="plane" size="0 0 0.05" material="groundplane"/>
 
+    <!-- Table under the conveyor -->
+    <body name="table" pos="0.45 0.3 0.05">
+      <!-- Table top -->
+      <geom name="table_top" type="box" size="0.25 1.0 0.08" rgba="0.5 0.5 0.5 1" material="dark_metal"/>
+    </body>
+
+
     <!-- Conveyor belt -->
-    <body name="conveyor_floor" pos="0.4 0.3 0.05">
-      <!-- Conveyor visible surface -->
-      <geom name="conveyor_geom" type="plane" size="0.25 1.0 0.01" material="conveyor" friction="1 1 1"/>
+    <body name="conveyor_floor" pos="0.45 0.3 0.135">
+      <geom name="conveyor_geom" type="plane" size="0.25 1.0 0.01" material="conveyor" friction="1 1 1" contype="0" conaffinity="0"/>
     </body>
 
     <!-- Black box fully on top of belt -->
-    <body name="box" pos="0.4 -0.5 0.08">
+    <body name="box" pos="0.45 -0.5 0.15">
       <joint name="box_slide" type="slide" axis="0 1 0" limited="true" range="0 0.45"/>
       <geom type="box" size="0.1 0.1 0.02" mass="0.1" material="black_box"/>
     </body>
-
 
     <!--
     <body name="worker" pos="1.0 -0.3 1.0">
@@ -81,24 +86,19 @@
 
     <!-- 2. CARDBOARD BOXES STACK -->
     <body name="cardboard_stack" pos="1.2 1.0 0.1"> 
-      <!-- Bottom box -->
       <geom type="box" size="0.14 0.14 0.12" material="cardboard" contype="0" conaffinity="0"/>
-      <!-- Middle box -->
       <geom type="box" size="0.12 0.13 0.1" pos="0.02 -0.02 0.22" material="cardboard" contype="0" conaffinity="0"/>
-      <!-- Top box -->
       <geom type="box" size="0.1 0.11 0.09" pos="-0.01 0.01 0.41" material="cardboard" contype="0" conaffinity="0"/>
-      <!-- Tape marks -->
       <geom type="box" size="0.14 0.01 0.001" pos="0 0 0.121" rgba="0.7 0.5 0.3 1" contype="0" conaffinity="0"/>
     </body>
 
     <!-- 3. FLOOR SAFETY SIGN -->
-    <body name="floor_warning" pos="0.8 0.95 0.002">
-      <!-- Yellow square base -->
+    <body name="floor_warning" pos="0.87 0.95 0.002">
       <geom type="box" size="0.15 0.15 0.001" material="safety_yellow" contype="0" conaffinity="0"/>
-      <!-- Black diagonal stripes -->
       <geom type="box" size="0.13 0.02 0.002" quat="0.924 0 0 0.383" material="safety_black" contype="0" conaffinity="0"/>
       <geom type="box" size="0.13 0.02 0.002" quat="0.924 0 0 -0.383" material="safety_black" contype="0" conaffinity="0"/>
     </body>
+
 
     <!-- 4. SCATTERED CUT METAL PARTS -->
     <body name="cut_parts_area" pos="1.3 0.3 0.005">
