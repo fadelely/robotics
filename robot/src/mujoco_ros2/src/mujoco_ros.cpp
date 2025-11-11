@@ -17,6 +17,9 @@
  * @see https://docs.ros.org/en/humble/index.html for ROS 2 documentation
  */
 
+#include "mjmodel.h"
+#include "mjtnum.h"
+#include "mujoco.h"
 #include <mujoco_ros2/mujoco_ros.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,6 +109,13 @@ MuJoCoROS::MuJoCoROS(const std::string &xmlLocation) : Node("mujoco_node") {
   // Make the OpenGL context current
   glfwMakeContextCurrent(_window);
   glfwSwapInterval(1); // NOTE TO SELF: CHECK THIS ARGUMENT
+
+  glfwSetWindowUserPointer(_window,
+                           this); // so we can refer to the instance "MuJoCoROS"
+                                  // later and access its members
+  glfwSetKeyCallback(_window,
+                     delete_trajectory); // handle any key presses; right now
+                                         // just delete trajectory path
 
   // Initialize MuJoCo rendering context
   mjv_defaultCamera(&_camera);
@@ -218,6 +228,83 @@ void MuJoCoROS::joint_command_callback(
   }
 }
 
+void MuJoCoROS::draw_trajectory_path() {
+  float rgba[4] = {1.0f, 0.0f, 0.0f, 1.0f}; // red
+  mjtNum sphsize[3] = {0.01, 0.01, 0.01};
+  mjtNum myrot3x3[9] = {1., 0., 0., 0., 1., 0., 0., 0., 1.};
+
+  // get the position of the end effector
+  int endEffector_id = mj_name2id(_model, mjOBJ_BODY, "wrist_3_link");
+  if (endEffector_id == -1)
+    throw std::runtime_error("End-effector body not found in model");
+  mjtNum endEffectorPos[3];
+  mju_copy3(endEffectorPos, _jointState->xpos + 3 * endEffector_id);
+
+  // lambda function that checks if two points are approximately equal based on
+  // eps
+  auto almost_equal = [](const std::array<mjtNum, 3> &a,
+                         const std::array<mjtNum, 3> &b, mjtNum eps = 1e-2) {
+    for (int i = 0; i < 3; ++i)
+      if (mju_abs(a[i] - b[i]) > eps)
+        return false;
+    return true;
+  };
+
+  // adds the point only if its not the same as the last one
+  // it also removes the earlier points of more than 200 points were drawn (so a
+  // buffer overflow doesn't occur in the scene.geom buffer)
+  std::array<mjtNum, 3> endEffectorPosArray = {
+      endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]};
+  if (trajectory.empty() ||
+      !almost_equal(trajectory.back(), endEffectorPosArray)) {
+    if (trajectory.size() > trajectoryLength) {
+      trajectory.erase(trajectory.begin());
+    }
+    trajectory.push_back(std::array<mjtNum, 3>{
+        endEffectorPos[0], endEffectorPos[1], endEffectorPos[2]});
+  }
+
+  for (size_t i = 0; i < trajectory.size(); i++) {
+    mjtNum currentPos[3] = {trajectory[i][0], trajectory[i][1],
+                            trajectory[i][2]};
+    mjvGeom *sphereGeom = &_scene.geoms[_scene.ngeom++];
+    // below isn't really needed bas kol el references 7atoha fa just incase
+    sphereGeom->objtype = mjOBJ_UNKNOWN;
+    sphereGeom->objid = -1;
+    sphereGeom->segid = _scene.ngeom;
+    sphereGeom->category = mjCAT_DECOR;
+
+    // adds the sphereGeom to the scene :)
+    mjv_initGeom(sphereGeom, mjGEOM_SPHERE, sphsize, currentPos, myrot3x3,
+                 rgba);
+    // adds the line to the scene :)
+    if (i > 0) {
+      mjvGeom *lineGeom = &_scene.geoms[_scene.ngeom++];
+      lineGeom->objtype = mjOBJ_UNKNOWN;
+      lineGeom->objid = -1;
+      lineGeom->segid = _scene.ngeom;
+      lineGeom->category = mjCAT_DECOR;
+      mjv_initGeom(lineGeom, mjGEOM_LINE, sphsize, currentPos, myrot3x3, rgba);
+      mjtNum previousPos[3] = {trajectory[i - 1][0], trajectory[i - 1][1],
+                               trajectory[i - 1][2]};
+      mjv_connector(lineGeom, mjGEOM_LINE, 2, currentPos, previousPos);
+    }
+  }
+}
+
+void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
+                                  int action, int mods) {
+  if (action != GLFW_PRESS)
+    return;
+
+  MuJoCoROS *instance =
+      static_cast<MuJoCoROS *>(glfwGetWindowUserPointer(window));
+
+  if (key == GLFW_KEY_D) {
+    std::cout << "Trajectory path deleted!" << std::endl;
+    instance->trajectory.clear();
+  }
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                    Update the 3D simulation //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -226,6 +313,7 @@ void MuJoCoROS::update_visualization() {
 
   mjv_updateScene(_model, _jointState, &_renderingOptions, NULL, &_camera,
                   mjCAT_ALL, &_scene); // Update 3D rendering
+  draw_trajectory_path();
 
   // Get framebuffer size
   int width, height;
