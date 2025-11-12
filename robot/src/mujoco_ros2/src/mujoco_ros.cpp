@@ -127,7 +127,7 @@ MuJoCoROS::MuJoCoROS(const std::string &xmlLocation) : Node("mujoco_node") {
 
   // Declare & get parameters for camera, visualisation
   _camera.azimuth = this->declare_parameter<double>("camera_azimuth", 135);
-  _camera.distance = this->declare_parameter<double>("camera_distance", 2.5);
+  _camera.distance = this->declare_parameter<double>("camera_distance", 3.3);
   _camera.elevation = this->declare_parameter<double>("camera_elevation", -35);
   _camera.orthographic =
       this->declare_parameter<bool>("camera_orthographic", true);
