@@ -17,9 +17,10 @@
  * @see https://docs.ros.org/en/humble/index.html for ROS 2 documentation
  */
 
-#include "mjmodel.h"
-#include "mjtnum.h"
-#include "mujoco.h"
+// #include "mjmodel.h"
+// #include "mjtnum.h"
+// #include "mujoco.h"
+#include <mujoco/mujoco.h>
 #include <mujoco_ros2/mujoco_ros.hpp>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
