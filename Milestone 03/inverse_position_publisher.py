@@ -61,8 +61,8 @@ def main(args=None):
     
     target = list(map(float,input("Enter x y z: ").split()))
     while len(target)>0 :
-        target_reversed = [-abs(target[0]), -abs(target[1]), target[2]]
-        node = UR5eNode(target=target_reversed)
+        target = [target[0] * -1, target[1] * -1, target[2]]
+        node = UR5eNode(target=target)
         target = list(map(float,input("Enter x y z: ").split()))
     
     #node.ik(target,node)
