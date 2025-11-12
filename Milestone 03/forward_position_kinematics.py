@@ -7,18 +7,14 @@ import numpy as np
 np.set_printoptions(suppress=True, precision=4)
 
 class ForwardPositionPublisher(Node):
-    def __init__(self, joint_angles):
+    def __init__(self):
         super().__init__('forward_position_publisher')
         self.publisher = self.create_publisher(Float64MultiArray, '/joint_commands', 10)
 
-        self.joint_angles = [float(x) for x in joint_angles]
         self.dh_params_a = [0, -0.425, -0.392, 0, 0, 0]
         self.dh_params_d = [0.163, 0, 0, 0.127, 0.1, 0.1]
 
-        fk_matrix = self.compute_fk(self.joint_angles)
-        print("\nForward Kinematics (Transformation Matrix):\n", fk_matrix)
 
-        self.publish_joint_angles(self.joint_angles)
 
     def dh_row(self, theta, d, a, alpha):
         return np.array([
@@ -53,6 +49,7 @@ class ForwardPositionPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
+    node = ForwardPositionPublisher()
 
     try:
         while True:
@@ -67,15 +64,17 @@ def main(args=None):
                 continue
 
             q_floats = [float(angle) for angle in q]
+            fk_matrix = node.compute_fk(q_floats)
+            print("\nForward Kinematics (Transformation Matrix):\n", fk_matrix)
+            node.publish_joint_angles(q_floats)
 
-            node = ForwardPositionPublisher(joint_angles=q_floats)
-            rclpy.spin_once(node, timeout_sec=1)
-            node.destroy_node()
+            rclpy.spin_once(node, timeout_sec=0.1)
 
     except KeyboardInterrupt:
         print("\nInterrupted by user.")
 
     finally:
+        node.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

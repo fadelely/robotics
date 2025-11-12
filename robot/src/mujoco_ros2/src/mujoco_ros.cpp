@@ -341,12 +341,51 @@ void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
       std::cout << "Drawing trajectory path!" << std::endl;
     }
   }
+
+  if (key == GLFW_KEY_1)
+    instance->moveBoxToMiddle = true;
+  if (key == GLFW_KEY_2)
+    instance->moveBoxToEnd = true;
+}
+
+void MuJoCoROS::move_box() {
+  double speed = 0.009;
+  double middleTarget = 0.45;
+  double endTarget = 1.0;
+  if (moveBoxToMiddle) {
+    // kol da just to get the position of the box :*)
+    int box_body_id = mj_name2id(_model, mjOBJ_BODY, "box");
+    int joint_id = _model->body_jntadr[box_body_id];
+    int qpos_index = _model->jnt_qposadr[joint_id];
+    double &pos = _jointState->qpos[qpos_index];
+    if (pos < middleTarget) {
+      pos += speed;
+    } else {
+      moveBoxToMiddle = false;
+    }
+  }
+  if (moveBoxToEnd) {
+    // kol da just to get the position of the box :*)
+    int box_body_id = mj_name2id(_model, mjOBJ_BODY, "box");
+    int joint_id = _model->body_jntadr[box_body_id];
+    int qpos_index = _model->jnt_qposadr[joint_id];
+    double &pos = _jointState->qpos[qpos_index];
+    if (pos < endTarget) {
+      pos += speed;
+    } else {
+      moveBoxToEnd = false;
+    }
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                    Update the 3D simulation //
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void MuJoCoROS::update_visualization() {
   glfwMakeContextCurrent(_window); // Ensure OpenGL context is current
+
+  if (moveBoxToMiddle || moveBoxToEnd) {
+    move_box();
+  }
 
   mjv_updateScene(_model, _jointState, &_renderingOptions, NULL, &_camera,
                   mjCAT_ALL, &_scene); // Update 3D rendering

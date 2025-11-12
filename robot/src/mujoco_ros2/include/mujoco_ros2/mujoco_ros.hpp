@@ -98,6 +98,14 @@ private:
   std::vector<std::array<mjtNum, 3>> trajectory; // positions of each point
   bool hideTrajectory = false;
   bool drawTrajectory = true;
+  bool moveBoxToMiddle = false;
+  bool moveBoxToEnd = false;
+
+  /**
+   * @brief Moves the box slowly by changing is position, only if the moveBox
+   * flag is true. flag is true whenever keybind is pressed (mafrood 1)
+   */
+  void move_box();
   /**
    * @brief Follows the end effector of the robot arm and draws a line :)
    */

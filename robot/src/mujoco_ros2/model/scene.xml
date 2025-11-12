@@ -62,7 +62,7 @@
 
     <!-- Black box fully on top of belt -->
     <body name="box" pos="0.45 -0.5 0.15">
-      <joint name="box_slide" type="slide" axis="0 1 0" limited="true" range="0 0.45"/>
+      <joint name="box_slide" type="slide" axis="0 1 0" limited="true" range="0 1"/>
       <geom type="box" size="0.1 0.1 0.02" mass="0.1" material="black_box"/>
     </body>
 
