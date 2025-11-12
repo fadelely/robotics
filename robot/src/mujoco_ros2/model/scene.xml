@@ -74,7 +74,7 @@
 
 
     <!-- 1. RED TOOLBOX -->
-    <body name="toolbox" pos="-0.7 -0.3 0.002">
+    <body name="toolbox" pos="-0.99 -0.55 0.002">
       <!-- Main toolbox body -->
       <geom type="box" size="0.12 0.08 0.08" material="red_toolbox" contype="0" conaffinity="0"/>
       <!-- Handle on top -->
