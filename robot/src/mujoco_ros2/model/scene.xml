@@ -49,20 +49,20 @@
     <geom name="floor" type="plane" size="0 0 0.05" material="groundplane"/>
 
     <!-- Table under the conveyor -->
-    <body name="table" pos="0.45 0.3 0.05">
+    <body name="table" pos="0.45 0.3 -0.05">
       <!-- Table top -->
       <geom name="table_top" type="box" size="0.25 1.0 0.08" rgba="0.5 0.5 0.5 1" material="dark_metal"/>
     </body>
 
 
     <!-- Conveyor belt -->
-    <body name="conveyor_floor" pos="0.45 0.3 0.135">
+    <body name="conveyor_floor" pos="0.45 0.3 0.035">
       <geom name="conveyor_geom" type="plane" size="0.25 1.0 0.01" material="conveyor" friction="1 1 1" contype="0" conaffinity="0"/>
     </body>
 
     <!-- Black box fully on top of belt -->
-    <body name="box" pos="0.45 -0.5 0.15">
-      <joint name="box_slide" type="slide" axis="0 1 0" limited="true" range="0 1"/>
+    <body name="box" pos="0.45 -0.5 0.05">
+      <joint name="box_slide" type="slide" axis="0 1 0" limited="true" range="0 1.5"/>
       <geom type="box" size="0.1 0.1 0.02" mass="0.1" material="black_box"/>
     </body>
 
