@@ -26,9 +26,9 @@ from sympy import symbols, Eq, solve
 for joint_index in range(7):
     c2_tmp, c3_tmp = symbols('c2_tmp c3_tmp')
     # q equation
-    eq_1 = Eq(C0[joint_index] + c2_tmp*(t)**2 + c3_tmp*(t)**3 - Final_Q[joint_index]) 
+    eq_1 = Eq(C0[joint_index] + c2_tmp*(t)**2 + c3_tmp*(t)**3, Final_Q[joint_index]) 
     # q_dot equation
-    eq_2 = Eq(2*c2_tmp*(t) + 3*c3_tmp*(t)**2 - 0)
+    eq_2 = Eq(2*c2_tmp*t + 3*c3_tmp*t**2, 0)
     #solve
     solved_eq = solve((eq_1, eq_2), (c2_tmp, c3_tmp))
     # append to C2 and C3 lists
