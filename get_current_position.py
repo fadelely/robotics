@@ -18,8 +18,10 @@ class GetPosition(Node):
                 self.joint_angle_callback,
                 10
                 )
-        self.dh_params_a = [0, -0.425, -0.392, 0, 0, 0]
+
+        self.dh_params_a = [0.0, -0.425, -0.392, 0.0, 0.0, 0.0]
         self.dh_params_d = [0.163, 0, 0, 0.127, 0.1, 0.1]
+
 
     def dh_row(self, theta, d, a, alpha):
         return np.array([
