@@ -1,5 +1,5 @@
 import numpy as np
-import sympy as sp
+from sympy import symbols, Eq, solve
 
 # Initial joints 
 Initial_Q = [-2.788547563050074, -0.5807988920173397, 1.102026594222845, 
@@ -9,19 +9,15 @@ Initial_Q = [-2.788547563050074, -0.5807988920173397, 1.102026594222845,
 Final_Q = [-4.48343493, -0.91867686, 0.91839568, -1.57051514, 
         1.57079633, -0.22895405, 0.0]
 
-# Total time (0we choose 10 but could be altered)
+# Total time (we choose 10 but could be altered)
 t = 10
 
 # q(t) = c0 + c1*t + c2*t^2 + c3*t^3 , we used third degree polynomial
 C0 = Initial_Q # Starting position
 C1 = [0, 0, 0, 0, 0, 0, 0]  # initial velocity is 0s
-# C2 = [0, 0, 0, 0, 0, 0, 0]  # initial acceleration is 0s
-# C3 = [(Final_Q[i] - C0[i]) / (t**3) for i in range(7)]  # calculate c3 for each joint
-
 C2 = []
 C3 = []
     
-from sympy import symbols, Eq, solve
 
 for joint_index in range(7):
     c2_tmp, c3_tmp = symbols('c2_tmp c3_tmp')
