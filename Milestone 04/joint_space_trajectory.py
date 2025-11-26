@@ -25,20 +25,32 @@ class UR5eIKNode(Node):
         self.joint_angles = list(msg.position[:-1])
 
     def start_trajectory(self):
+        # the trajectory is to go from (0.7, 0.4, 0.3) to (0.3, -0.7, 0.6) in 10 seconds
+        # since it is joint space trajectory, the mootion corresponds to moving the robot from the initial joint configuration q_initial
+        # to the final joint configuration q_final,
+        # q_initial = (-2.78, -0.58 ,1.10, -2.09, 1.57, 0.0) 
+        # q_final   = (-4.48, -0.91, 0.91, -1.57, 1.57, 0.0) 
         duration = 10
         time_curr = 0
+        # the timestep is 0.001 seconds, due the the simulation frequency itself being 1000 hz, so 1/1000 is 0.001 seconds
         timestep = 0.001
         start_time = time.time()
 
         while time_curr <= duration:
+            # spin does alot of things, but mainly its purpose is to activate callback functions
+            # the timeout_sec is set to 0.0 to prevent it from blocking execution
             rclpy.spin_once(self, timeout_sec = 0.0)
-            q_1 = -2.788547563050074 + -0.0508466210*time_curr**2 + 0.0033897747*time_curr**3
-            q_2 = -0.5807988920173397 + -0.0101363390*time_curr**2 + 0.0006757559*time_curr**3
-            q_3 = 1.102026594222845  + -0.0055089274*time_curr**2 + 0.0003672618*time_curr**3
-            q_4 = -2.0920240290004024 +  0.0156452667*time_curr**2 + -0.0010430178*time_curr**3
-            q_5 = 1.5707963267948966 +  1.e-10*time_curr**2 + 0.0*time_curr**3
-            q_6 = -1.9238414173346157 + 0.0508466210*time_curr**2 + -0.0033897747*time_curr**3
+
+            # the way these equations are derived are explained in joint_space_trajectory_calculations
+            q_1 = -2.78854756 + -0.050847*time_curr**2 + 0.00339*time_curr**3
+            q_2 = -0.58079889 + -0.010136*time_curr**2 + 0.000676*time_curr**3
+            q_3 = 1.10202659 + -0.005509*time_curr**2 + 0.000367*time_curr**3
+            q_4 = -2.09202403 + 0.015645*time_curr**2 + -0.001043*time_curr**3
+            q_5 = 1.57079633 + 0.0*time_curr**2 + 0.0*time_curr**3
+            q_6 = 0.0 + 0.0*time_curr**2 + 0.0*time_curr**3
+
            
+            # 0.0 here is just the extra joint for the conveyor
             joints = [q_1,q_2,q_3,q_4,q_5,q_6]    
             self.publish(joints)
 
@@ -56,8 +68,6 @@ class UR5eIKNode(Node):
 
 
     def publish(self, joints):
-      
-
         msg = Float64MultiArray()
         msg.data = joints + [0.0]  
         self.publisher.publish(msg)

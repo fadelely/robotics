@@ -2,12 +2,12 @@ import numpy as np
 from sympy import symbols, Eq, solve
 
 # Initial joints 
-Initial_Q = [-2.788547563050074, -0.5807988920173397, 1.102026594222845, 
-            -2.0920240290004024, 1.5707963267948966, -1.9238414173346157, 0.0]
+Initial_Q =[-2.78854756, -0.58079889, 1.10202659, -2.09202403, 1.57079633, 0.0]
+ 
 
 # Final joints
 Final_Q = [-4.48343493, -0.91867686, 0.91839568, -1.57051514, 
-        1.57079633, -0.22895405, 0.0]
+        1.57079633, 0.0]
 
 # Total time (we choose 10 but could be altered)
 t = 10
@@ -19,7 +19,7 @@ C2 = []
 C3 = []
     
 
-for joint_index in range(7):
+for joint_index in range(6):
     c2_tmp, c3_tmp = symbols('c2_tmp c3_tmp')
     # q equation
     eq_1 = Eq(C0[joint_index] + c2_tmp*(t)**2 + c3_tmp*(t)**3, Final_Q[joint_index]) 
@@ -42,7 +42,7 @@ q_dot_traj = []          # q_dot(t) = c1 + 2*c2*t + 3*c3*t^2
 
 
 # Calculate equations for all 7 joints
-for joint_index in range(7):
+for joint_index in range(6):
     q_values = [] # Position values
     q_dot_values = [] # Velocity values
     # q_double_dot_values = [] # Acceleration values
@@ -72,11 +72,11 @@ for joint_index in range(7):
     # q_double_dot_traj.append(q_double_dot_values)
 
 # Print results for each joint
-print("  q_c2:", [round(x, 2) for x in C2])
-print("  q_c3:", [round(x, 2) for x in C3])
+print("  q_c2:", [round(x, 6) for x in C2])
+print("  q_c3:", [round(x, 6) for x in C3])
 
-for joint_index in range(7):
+for joint_index in range(6):
     print(f"\nJoint {joint_index}:")
-    print(f"  q(t):            {[round(val, 2) for val in q_traj[joint_index]]}")
-    print(f"  q_dot(t):        {[round(val, 2) for val in q_dot_traj[joint_index]]}")
+    print(f"  q(t):            {[round(val, 4) for val in q_traj[joint_index]]}")
+    print(f"  q_dot(t):        {[round(val, 4) for val in q_dot_traj[joint_index]]}")
     # print(f"  q_double_dot(t): {[round(val, 2) for val in q_double_dot_traj[joint_index]]}")
