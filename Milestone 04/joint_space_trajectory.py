@@ -32,14 +32,14 @@ class UR5eIKNode(Node):
 
         while time_curr <= duration:
             rclpy.spin_once(self, timeout_sec = 0.0)
-            q_1 = -2.788547563050074 - 0.05*time_curr**2
-            q_2 = -0.5807988920173397 - 0.01*time_curr**2 
-            q_3 = 1.102026594222845  - 0.e-2*time_curr**2 
-            q_4 = -2.0920240290004024 +  0.02*time_curr**2 
-            q_5 = 1.5707963267948966 
-            q_6 = -1.9238414173346157 + 0.05*time_curr**2
-    
-            joints = [q_1,q_2,q_3,q_4,q_5,q_6]
+            q_1 = -2.788547563050074 + -0.0508466210*time_curr**2 + 0.0033897747*time_curr**3
+            q_2 = -0.5807988920173397 + -0.0101363390*time_curr**2 + 0.0006757559*time_curr**3
+            q_3 = 1.102026594222845  + -0.0055089274*time_curr**2 + 0.0003672618*time_curr**3
+            q_4 = -2.0920240290004024 +  0.0156452667*time_curr**2 + -0.0010430178*time_curr**3
+            q_5 = 1.5707963267948966 +  1.e-10*time_curr**2 + 0.0*time_curr**3
+            q_6 = -1.9238414173346157 + 0.0508466210*time_curr**2 + -0.0033897747*time_curr**3
+           
+            joints = [q_1,q_2,q_3,q_4,q_5,q_6]    
             self.publish(joints)
 
             time_curr += timestep
@@ -76,7 +76,7 @@ def main(args=None):
     time.sleep(1.0)
 
     time_before_movement = time.time()
-    node.get_logger().info("Moving robot arm to the final pos reaching these joints values ([-4.48, -0.91, 0.91, -1.57, 1.57, -0.22) in 10 seconds using joint-space trajectory planning...")
+    node.get_logger().info("Moving robot arm to the final pos with these joints values ([-4.48, -0.91, 0.91, -1.57, 1.57, -0.22) in 10 seconds using joint-space trajectory planning...")
     node.start_trajectory()
     time_after_movement = time.time()
     total_time_taken = round(time_after_movement - time_before_movement, 3)
