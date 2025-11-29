@@ -100,6 +100,8 @@ private:
   bool drawTrajectory = true;
   bool moveBoxToMiddle = false;
   bool moveBoxToEnd = false;
+  bool dragging = false;
+  double last_x = 0, last_y = 0;
 
   /**
    * @brief Moves the box slowly by changing is position, only if the moveBox
@@ -117,6 +119,18 @@ private:
    */
   static void delete_trajectory(GLFWwindow *window, int key, int scancode,
                                 int action, int mods);
+  /**
+   * @brief detects when left click is being held so that the cursor position
+   * function can move the camera
+   */
+
+  static void mouse_callback(GLFWwindow *window, int button, int action,
+                             int mods);
+  /*
+   * @brief moves the camera only if left click is being held (called everytime
+   * when the mouse moves though)
+   */
+  static void cursor_position_callback(GLFWwindow *window, double x, double y);
 
   /**
    * @brief Updates the robot state, publishes joint state information.

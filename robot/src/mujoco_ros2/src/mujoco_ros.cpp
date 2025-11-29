@@ -20,6 +20,7 @@
 // #include "mjmodel.h"
 // #include "mjtnum.h"
 // #include "mujoco.h"
+#include <GLFW/glfw3.h>
 #include <mujoco/mujoco.h>
 #include <mujoco_ros2/mujoco_ros.hpp>
 
@@ -117,6 +118,8 @@ MuJoCoROS::MuJoCoROS(const std::string &xmlLocation) : Node("mujoco_node") {
   glfwSetKeyCallback(_window,
                      delete_trajectory); // handle any key presses; right now
                                          // just delete trajectory path
+  glfwSetCursorPosCallback(_window, cursor_position_callback);
+  glfwSetMouseButtonCallback(_window, mouse_callback);
 
   // Initialize MuJoCo rendering context
   mjv_defaultCamera(&_camera);
@@ -126,7 +129,7 @@ MuJoCoROS::MuJoCoROS(const std::string &xmlLocation) : Node("mujoco_node") {
   mjv_makeScene(_model, &_scene, 1000);
 
   // Declare & get parameters for camera, visualisation
-  _camera.azimuth = this->declare_parameter<double>("camera_azimuth", 135);
+  _camera.azimuth = this->declare_parameter<double>("camera_azimuth", 150);
   _camera.distance = this->declare_parameter<double>("camera_distance", 3.3);
   _camera.elevation = this->declare_parameter<double>("camera_elevation", -35);
   _camera.orthographic =
@@ -343,10 +346,52 @@ void MuJoCoROS::delete_trajectory(GLFWwindow *window, int key, int scancode,
     }
   }
 
-  if (key == GLFW_KEY_1)
+  if (key == GLFW_KEY_1) {
     instance->moveBoxToMiddle = true;
-  if (key == GLFW_KEY_2)
+  }
+  if (key == GLFW_KEY_2) {
     instance->moveBoxToEnd = true;
+  }
+}
+
+void MuJoCoROS::mouse_callback(GLFWwindow *window, int button, int action,
+                               int mods) {
+  if (button == GLFW_MOUSE_BUTTON_LEFT) {
+    MuJoCoROS *instance =
+        static_cast<MuJoCoROS *>(glfwGetWindowUserPointer(window));
+
+    // set the current position of the x and y so that dragging doesnt cause a
+    // sudden jump
+    glfwGetCursorPos(window, &instance->last_x, &instance->last_y);
+    if (action == GLFW_PRESS) {
+      instance->dragging = true;
+
+    } else if (action == GLFW_RELEASE)
+      instance->dragging = false;
+  }
+}
+void MuJoCoROS::cursor_position_callback(GLFWwindow *window, double x,
+                                         double y) {
+  MuJoCoROS *instance =
+      static_cast<MuJoCoROS *>(glfwGetWindowUserPointer(window));
+  if (!instance->dragging)
+    return;
+
+  double dx = x - instance->last_x;
+  double dy = y - instance->last_y;
+
+  const double sensitivity = 0.3;
+
+  instance->_camera.azimuth -= dx * sensitivity;
+  instance->_camera.elevation -= dy * sensitivity;
+  // dont let the camera go upside down
+  if (instance->_camera.elevation > 89)
+    instance->_camera.elevation = 89;
+  if (instance->_camera.elevation < -89)
+    instance->_camera.elevation = -89;
+
+  instance->last_x = x;
+  instance->last_y = y;
 }
 
 void MuJoCoROS::move_box() {
