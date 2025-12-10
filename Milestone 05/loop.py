@@ -154,6 +154,24 @@ class ClosedLoopNode(Node):
     def joint_angle_callback(self, msg):
         # Drop the 7th joint (box_slide) we don't need it because it's fixed
         self.joint_angles = list(msg.position[:-1])
+        
+    def move_to_initial_pos(self):
+        duration = 10
+        time_curr = 0
+        timestep = 0.001
+        start_time = time.time()
+        q_c2 = np.array([0.076432, -0.038377, 0.061726, 0.118620, -0.047124, -0.029308])
+        q_c3 = np.array([-0.005095, 0.002558, -0.004115, -0.007908, 0.003142, 0.001954])
+
+        while time_curr <= duration:
+            rclpy.spin_once(self, timeout_sec = 0.0)
+            velocity = 2*q_c2*time_curr + 3 * q_c3 * (time_curr**2)
+            self.publish_velocity(velocity)
+
+            time_curr += timestep
+            time_to_wait = start_time + time_curr - time.time()
+            if time_to_wait > 0:
+                time.sleep(time_to_wait)
 
     def publish_velocity(self, dq):
         msg = Float64MultiArray()
@@ -197,6 +215,11 @@ class ClosedLoopNode(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = ClosedLoopNode()
+
+    time.sleep(0.5)
+    node.get_logger().info("Moving to initial position...")
+    node.move_to_initial_pos()
+    time.sleep(0.5)
 
     node.get_logger().info("Starting closed-loop fuzzy circle tracking...")
     time.sleep(1.0)
