@@ -308,7 +308,7 @@ class ClosedLoopNode(Node):
 
         while time_curr <= duration:
             rclpy.spin_once(self, timeout_sec = 0.0)
-            velocity = 2*q_c2*time_curr + 3 * q_c3 * (time_curr**2)
+            velocity = 2 * q_c2*time_curr + 3 * q_c3 * (time_curr**2)
             self.publish_velocity(velocity)
 
             time_curr += timestep
@@ -325,7 +325,9 @@ def main(args=None):
 
     node.get_logger().info("Moving to initial position...")
     node.move_to_initial_pos()
-    time.sleep(0.5)
+
+    node.get_logger().info("Moving box...")
+    time.sleep(5.0)
 
     node.get_logger().info("Starting closed-loop fuzzy circle tracking...")
     node.get_logger().info("Waiting for joint state data...")
